@@ -1,34 +1,54 @@
-const userItems = [
-  {
-    user_id: 3609,
-    name: 'John Doe',
-    username: 'johndoe',
-    email: 'john@metropolia.fi',
-    role: 'user',
-    password: 'password',
-  },
-];
+import promisePool from '../../utils/database.js';
 
-const listAllUsers = () => {
-  return userItems;
+const getAllUsers = async () => {
+  const [rows] = await promisePool.query('SELECT * FROM wsk_users');
+  return rows;
 };
 
-const findUserById = (id) => {
-  return userItems.find((item) => item.user_id == id);
+const getUserById = async (id) => {
+  const [rows] = await promisePool.execute(
+    'SELECT * FROM wsk_users WHERE user_id = ?',
+    [id]
+  );
+  return rows[0];
 };
 
-const addUser = (user) => {
-  const {name, username, email, role, password} = user;
-  const newId = userItems[0].user_id + 1;
-  userItems.unshift({
-    user_id: newId,
-    name,
-    username,
-    email,
-    role,
-    password,
-  });
-  return {user_id: newId};
+const addUser = async (user) => {
+  const [rows] = await promisePool.execute('INSERT INTO wsk_users SET ?', [
+    user,
+  ]);
+  return {user_id: rows.insertId};
 };
 
-export {listAllUsers, findUserById, addUser};
+const updateUser = async (user, id) => {
+  const [rows] = await promisePool.execute(
+    'UPDATE wsk_users SET ? WHERE user_id = ?',
+    [user, id]
+  );
+  return rows.affectedRows !== 0;
+};
+
+const deleteUser = async (id) => {
+  const [rows] = await promisePool.execute(
+    'DELETE FROM wsk_users WHERE user_id = ?',
+    [id]
+  );
+  return rows.affectedRows !== 0;
+};
+
+const getCatsByUserId = async (id) => {
+  const [rows] = await promisePool.execute(
+    'SELECT * FROM wsk_cats WHERE owner = ?',
+    [id]
+  );
+  return rows;
+};
+
+export {
+  getAllUsers,
+  getUserById,
+  addUser,
+  updateUser,
+  deleteUser,
+  getCatsByUserId,
+};
