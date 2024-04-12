@@ -1,4 +1,5 @@
 import {addCat, findCatById, listAllCats} from '../models/cat-model.js';
+import {createThumbnail} from '../../middleware.js';
 
 const getCats = (req, res) => {
   res.json(listAllCats());
@@ -18,13 +19,15 @@ const postCat = (req, res) => {
     ...req.body,
     filename: req.file.filename,
   };
-  const result = addCat(catData);
-  if (result.cat_id) {
-    res.status(201);
-    res.json({message: 'New cat added.', result});
-  } else {
-    res.sendStatus(400);
-  }
+  createThumbnail(req, res, () => {
+    const result = addCat(catData);
+    if (result.cat_id) {
+      res.status(201);
+      res.json({message: 'New cat added.', result});
+    } else {
+      res.sendStatus(400);
+    }
+  });
 };
 
 const putCat = (req, res) => {
