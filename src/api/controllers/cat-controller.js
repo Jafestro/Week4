@@ -29,6 +29,11 @@ const getCatByUserId = async (req, res) => {
   }
 };
 
+const getOwnerIdByCatId = async (catId) => {
+  const cat = await findCatById(catId);
+  return cat.owner ?? null;
+};
+
 const postCat = (req, res) => {
   const catData = {
     ...req.body,
@@ -46,15 +51,33 @@ const postCat = (req, res) => {
 };
 
 const putCat = async (req, res) => {
-  // not implemented in this example, this is future homework
-  res.status(200);
-  res.send({message: 'Cat item updated.'});
+  const result = await modifyCat(req.body, req.params.id, res.locals.user);
+  if (result.message === 'success') {
+    res.status(200);
+    res.send({message: 'Cat item updated.'});
+  } else {
+    res.status(403);
+    res.send({message: 'User is not the owner of the resource'});
+  }
 };
 
-const deleteCat = (req, res) => {
-  // not implemented in this example, this is future homework
-  res.status(200);
-  res.send({message: 'Cat item deleted.'});
+const deleteCat = async (req, res) => {
+  const result = await removeCat(req.params.id, res.locals.user);
+  if (result.message === 'success') {
+    res.status(200);
+    res.send({message: 'Cat item deleted.'});
+  } else {
+    res.status(403);
+    res.send({message: 'User is not the owner of the resource'});
+  }
 };
 
-export {getCats, getCatById, postCat, putCat, deleteCat, getCatByUserId};
+export {
+  getCats,
+  getCatById,
+  postCat,
+  putCat,
+  deleteCat,
+  getCatByUserId,
+  getOwnerIdByCatId,
+};
